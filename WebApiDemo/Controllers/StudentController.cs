@@ -134,5 +134,63 @@ namespace WebApiDemo.Controllers
 
             return Ok(students);
         }
+
+
+        public IHttpActionResult PostNewStudent(StudentViewModel student)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Invalid data.");
+
+            using (var ctx = new SchoolDBEntities())
+            {
+                ctx.Students.Add(new Student()
+                {
+                    StudentID = student.Id,
+                    StudentName = student.StudenName
+                });
+
+                ctx.SaveChanges();
+            }
+            return Ok();
+        }
+
+        public IHttpActionResult Put(StudentViewModel student)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Not a valid model");
+
+            using (var ctx = new SchoolDBEntities())
+            {
+                var existingStudent = ctx.Students.Where(s => s.StudentID == student.Id).FirstOrDefault<Student>();
+
+                if (existingStudent != null)
+                {
+                    existingStudent.StudentName = student.StudenName;
+                    ctx.SaveChanges();
+                }
+                else
+                    return NotFound();
+            }
+
+            return Ok();
+        }
+
+        public IHttpActionResult Delete(int id)
+        {
+            if (id <= 0)
+                return BadRequest("Not a validad student id");
+
+            using (var ctx = new SchoolDBEntities())
+            {
+                var student = ctx.Students
+                    .Where(s => s.StudentID == id)
+                    .FirstOrDefault();
+
+                ctx.Entry(student).State = System.Data.Entity.EntityState.Deleted;
+                ctx.SaveChanges();
+            }
+
+            return Ok();
+        }
     }
 }
